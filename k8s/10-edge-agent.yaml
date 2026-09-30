@@ -1,0 +1,40 @@
+# Edge Agent sebagai Pod yang dikelola K3s (bukan docker run manual).
+# Satu Pod = satu slot. Untuk slot baru: salin blok ini, ganti nama & SLOT_ID.
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: edge-a1, namespace: parking }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: edge-agent, slot: A1 } }
+  template:
+    metadata: { labels: { app: edge-agent, slot: A1 } }
+    spec:
+      containers:
+        - name: edge-agent
+          image: parking-agent:1.0
+          imagePullPolicy: Never
+          env:
+            - { name: SLOT_ID, value: "A1" }
+            - { name: BROKER_HOST, value: "mosquitto" }
+            - { name: SIM_PERIOD, value: "12" }
+            - { name: LATENCY_FILE, value: "/tmp/latency-A1.csv" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: edge-a2, namespace: parking }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: edge-agent, slot: A2 } }
+  template:
+    metadata: { labels: { app: edge-agent, slot: A2 } }
+    spec:
+      containers:
+        - name: edge-agent
+          image: parking-agent:1.0
+          imagePullPolicy: Never
+          env:
+            - { name: SLOT_ID, value: "A2" }
+            - { name: BROKER_HOST, value: "mosquitto" }
+            - { name: SIM_PERIOD, value: "12" }
+            - { name: SIM_OFFSET, value: "6" }
+            - { name: LATENCY_FILE, value: "/tmp/latency-A2.csv" }

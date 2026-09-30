@@ -1,0 +1,20 @@
+# RASPBERRY PI (Edge). Buat file .env di folder ini:  FOG_IP=192.168.x.x  (IP laptop)
+#   docker compose -f docker-compose.edge.yml up -d --build
+x-edge: &edge
+  build: { context: .., dockerfile: docker/Dockerfile.edge }
+  image: parking-agent:1.0
+  restart: unless-stopped
+  volumes: ["../data:/data"]
+services:
+  edge-a1:
+    <<: *edge
+    container_name: edge-a1
+    environment: { SLOT_ID: A1, BROKER_HOST: "${FOG_IP}", SIM_OFFSET: "0",  LATENCY_FILE: /data/latency-A1.csv }
+  edge-a2:
+    <<: *edge
+    container_name: edge-a2
+    environment: { SLOT_ID: A2, BROKER_HOST: "${FOG_IP}", SIM_OFFSET: "6",  LATENCY_FILE: /data/latency-A2.csv }
+  edge-a3:
+    <<: *edge
+    container_name: edge-a3
+    environment: { SLOT_ID: A3, BROKER_HOST: "${FOG_IP}", SIM_OFFSET: "12", LATENCY_FILE: /data/latency-A3.csv }

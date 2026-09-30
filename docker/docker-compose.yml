@@ -1,0 +1,47 @@
+# Jalankan dari folder docker/:  docker compose up -d --build
+x-edge: &edge
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile.edge
+  image: parking-agent:1.0
+  depends_on: [mosquitto]
+  restart: unless-stopped
+  volumes: [ "../data:/data" ]
+  environment: &edge-env
+    BROKER_HOST: mosquitto
+    FLOOR: lantai-1
+    SIM_PERIOD: "12"
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: fog-mosquitto
+    ports: ["1883:1883"]
+    volumes:
+      - ../fog/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    restart: unless-stopped
+
+  fog-aggregator:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.fog
+    image: parking-fog:1.0
+    container_name: fog-aggregator
+    depends_on: [mosquitto]
+    environment: { BROKER_HOST: mosquitto }
+    ports: ["5000:5000"]
+    volumes: [ "../data:/data" ]
+    restart: unless-stopped
+
+  edge-a1:
+    <<: *edge
+    container_name: edge-a1
+    environment: { <<: *edge-env, SLOT_ID: A1, SIM_OFFSET: "0",  LATENCY_FILE: /data/latency-A1.csv }
+  edge-a2:
+    <<: *edge
+    container_name: edge-a2
+    environment: { <<: *edge-env, SLOT_ID: A2, SIM_OFFSET: "6",  LATENCY_FILE: /data/latency-A2.csv }
+  edge-a3:
+    <<: *edge
+    container_name: edge-a3
+    environment: { <<: *edge-env, SLOT_ID: A3, SIM_OFFSET: "12", LATENCY_FILE: /data/latency-A3.csv }

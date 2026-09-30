@@ -1,0 +1,17 @@
+# LAPTOP (Fog): broker + aggregator/dashboard.  docker compose -f docker-compose.fog.yml up -d --build
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: fog-mosquitto
+    ports: ["1883:1883"]
+    volumes: ["../fog/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"]
+    restart: unless-stopped
+  fog-aggregator:
+    build: { context: .., dockerfile: docker/Dockerfile.fog }
+    image: parking-fog:1.0
+    container_name: fog-aggregator
+    depends_on: [mosquitto]
+    environment: { BROKER_HOST: mosquitto }
+    ports: ["5000:5000"]
+    volumes: ["../data:/data"]
+    restart: unless-stopped

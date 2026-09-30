@@ -1,0 +1,20 @@
+# Slot baru untuk demo scaling: kubectl apply -f k8s/20-edge-a3.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: edge-a3, namespace: parking }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: edge-agent, slot: A3 } }
+  template:
+    metadata: { labels: { app: edge-agent, slot: A3 } }
+    spec:
+      containers:
+        - name: edge-agent
+          image: parking-agent:1.0
+          imagePullPolicy: Never
+          env:
+            - { name: SLOT_ID, value: "A3" }
+            - { name: BROKER_HOST, value: "mosquitto" }
+            - { name: SIM_PERIOD, value: "12" }
+            - { name: SIM_OFFSET, value: "12" }
+            - { name: LATENCY_FILE, value: "/tmp/latency-A3.csv" }
